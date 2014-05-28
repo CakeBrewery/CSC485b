@@ -6,9 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException; 
 import java.util.*;
 
-
 public class diameter{
-
 	//Parses a file with a graph in .csv format and generates an adjacency list
 	public static float[][] parseFile(String filepath)
 	{
@@ -43,7 +41,7 @@ public class diameter{
 		catch (FileNotFoundException e)
 		{
 			graph = null; 
-			System.out.println("File IO Error");
+			System.out.println("File IO Error: could not read file");
 		}
 
 		return graph; 
@@ -60,10 +58,10 @@ public class diameter{
 			for(int j = 0; j < size; j++){
 				if(graph[i][j] == 0)
 					graph[i][j] = Float.POSITIVE_INFINITY;
-
 			}
 		}
 
+		//Floyd Warshall
 		for(int k = 0; k < size; k++){
 			for(int i = 0; i < size; i++){
 				for(int j = 0; j < size; j++){
@@ -105,7 +103,6 @@ public class diameter{
 	//Parameters:	graph - an adjacency matrix with the graph
 	public static int checkIsolated(float[][] graph)
 	{
-
 		int size = graph[0].length;  //Get size of graph
 		int count = 0; 
 
@@ -130,12 +127,24 @@ public class diameter{
 
 	public static void main(String[] args)
 	{
-		//Declarations
-		String filepath = "./graph.csv";
-		float[][] graph;
+		String filepath;  //Path of file to open
+		float[][] graph;  //Adjacency matrix of graph
+
+		//User Input
+		if(args.length < 1){
+			Scanner in = new Scanner(System.in);
+			System.out.println("Enter path of .csv file: ");
+			filepath = in.nextLine(); 
+		}
+		else{
+			filepath = args[0];
+		}
 
 		//Generate Adjacency Matrix of graph from file
-		graph = parseFile(filepath); 
+		if((graph = parseFile(filepath)) == null){
+			System.out.println("Error parsing file, aborting.");
+			return; 
+		} 
 		
 		//get diameter
 		int diameter = getDiameter(graph); 
