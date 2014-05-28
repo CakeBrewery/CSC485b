@@ -113,7 +113,7 @@ public class diameter{
 		for(int i = 0; i < size; i++){
 			Boolean has_beighbour = false; 
 			for(int j = 0; j < size; j++){
-				if(graph[i][j] == 1){
+				if(graph[i][j] == 1 || graph[j][i] == 1){
 					//Found a neighbour
 					has_beighbour = true; 
 				}
