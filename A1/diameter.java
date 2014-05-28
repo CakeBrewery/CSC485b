@@ -1,3 +1,5 @@
+//University of Victoria
+//Samuel Navarrete
 
 import java.io.File; 
 import java.io.FileNotFoundException; 
