@@ -1,5 +1,6 @@
 //University of Victoria
 //Samuel Navarrete
+//CSC485 A1 Q2, Diameter of a Network Graph
 
 import java.io.File; 
 import java.io.FileNotFoundException; 
