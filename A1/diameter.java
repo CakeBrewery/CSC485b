@@ -51,7 +51,8 @@ public class diameter{
 
 	//Runs the Floyd Warshall algorithm on the given graph 
 	//Parameters: graph - an adjacency matrix with the graph
-	public static void floydWarshall(float[][] graph){
+	public static void floydWarshall(float[][] graph)
+	{
 		int size = graph[0].length; //Get size of graph
 
 		//Initialize all zeroes as infinite distances
@@ -90,9 +91,9 @@ public class diameter{
 		//Look for longest of all the shortest paths
 		for(int i = 0; i < size; i++){
 			for(int j = 0; j < size; j++){
-				if(graph[i][j] != Float.POSITIVE_INFINITY){
-					if (diameter < graph[i][j])
-						diameter = graph[i][j];
+				if(graph_copy[i][j] != Float.POSITIVE_INFINITY){
+					if (diameter < graph_copy[i][j])
+						diameter = graph_copy[i][j];
 				}
 			}
 		}
