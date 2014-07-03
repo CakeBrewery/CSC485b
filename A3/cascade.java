@@ -5,8 +5,44 @@
 import java.io.File; 
 import java.io.FileNotFoundException; 
 import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random; 
 
 public class cascade{
+
+	public static Random rand = new Random();
+
+	public static int randInt(int min, int max)
+	{
+	    int randomNum = rand.nextInt((max - min) + 1) + min;
+	    return randomNum;
+	}
+
+
+	public static ArrayList<ArrayList<Integer>> combine(int n, int k) {
+        ArrayList<ArrayList<Integer>> sol = new ArrayList<ArrayList<Integer>>();
+        recursion(n,k,new ArrayList<Integer>(), sol);
+        return sol;
+    }
+     
+    private static void recursion(int n, int k, ArrayList<Integer> partial,
+        ArrayList<ArrayList<Integer>> sol) {
+        if(partial.size() == k && !sol.contains(partial)) {
+            Collections.sort(partial);
+            sol.add(partial);
+        } else if(partial.size() > k) {
+            return;
+        } else {
+            for(int i = n; i >= 1; --i) {
+                ArrayList<Integer> partial_sol = new ArrayList<Integer>();
+                partial_sol.addAll(partial);
+                partial_sol.add(i);
+                recursion(i-1, k, partial_sol, sol);
+            }
+        }
+    }
+
 	//Parses a file with a graph in .csv format and generates an adjacency list
 	public static float[][] parseFile(String filepath)
 	{
@@ -53,38 +89,43 @@ public class cascade{
 		return graph; 
 	}
 
-	public static Boolean[] createAdoptGraph(float[][] graph)
+	//Initializes a list of adopting nodes for the graph 
+	public static Boolean[] createAdoptGraph(float[][] graph, ArrayList<Integer> budget_nodes)
 	{
 		Boolean[] adopt = new Boolean[graph[0].length];
+
+		//Initialize all nodes to not adopting (false)
 		for(int i = 0; i < graph[0].length; i++){
 			adopt[i] = false; 
+		}
+
+		//Use budget on given set of nodes
+		for (Integer i : budget_nodes){
+			adopt[i] = true; 
 		}
 		return adopt; 
 	}
 
-	public static int startCascade(float[][] graph, int x, float q)
+	//Starts a cascade on graph given the initial budget nodes and a threshold q
+	//Returns number of adopting nodes after the cascade halts (no longer changes or is complete) 
+	public static int startCascade(float[][] graph, int x, float q, ArrayList<Integer> budget_nodes)
 	{
-		Boolean[] adopt; 
-		adopt = createAdoptGraph(graph); 
-
-		//Spread budget 
-		for(int i = 0; i < x; i++){
-			adopt[i] = true; 
-		}
-
+		int size = graph[0].length; 
 		int ret_val = 0; 
-		float p = 0; 
+		double p = 0; 
 
+		Boolean[] adopt; 
+		adopt = createAdoptGraph(graph, budget_nodes); 
 
 		boolean graph_changed = true; 
-		while(graph_changed) // Keep going until graph stops changing
+		while(graph_changed) // Keep going until graph stops changing (no more adopting nodes)
 		{
 			graph_changed = false; 
 			for(int i = 0; i < graph[0].length; i++){
 				if(adopt[i] == false){
-					int neighbour_count = 0; 
+					int neighbour_count = 0; //all neighbours
 					int adpt_neighbours = 0; //adopting neighbours
-					for(int j = i+1; j < graph[0].length; j++){
+					for(int j = 0; j < graph[0].length; j++){
 						if(graph[i][j] == 1 || graph[j][i] == 1){
 							neighbour_count++; 
 							if(adopt[j] == true){
@@ -92,7 +133,7 @@ public class cascade{
 							}
 						}
 					}
-					p = (float)((float)adpt_neighbours/(float)neighbour_count); 
+					p = (double)((double)adpt_neighbours/(double)neighbour_count); 
 					if(p >= q){
 						adopt[i] = true; 
 						graph_changed = true; 
@@ -104,7 +145,8 @@ public class cascade{
 		return ret_val; 
 	}
 
-	public static void printAdjMatrix(float[][] graph){
+	public static void printAdjMatrix(float[][] graph)
+	{
 		for(int i = 0; i < graph[0].length; i++){
 			for(int j = 0; j < graph[0].length; j++){
 				System.out.print((int)graph[i][j]);
@@ -113,11 +155,63 @@ public class cascade{
 		}
 	}
 
+	public static int simpleCascadeAlg(float[][] graph, float q)
+	{
+		System.out.println("Running Simple Cascade Algorithm: \n   Uses the initial nodes as budget nodes"); 
+
+		for(int i = 0; i <= graph[0].length; i++){
+			//use budget on initial nodes
+			ArrayList<Integer> budget_nodes = new ArrayList<Integer>(); 
+			for(int j = 0; j < i; j++){
+				budget_nodes.add(j); 
+			}
+
+			//get total number of adopting nodes after cascade halts
+			int total_adopt = i + startCascade(graph, i, q, budget_nodes); 
+			System.out.print("x: " + String.format("%3d", i) + " , total adopting after: " + total_adopt); 
+			if(total_adopt == graph[0].length){
+				System.out.println(" COMPLETE CASCASDE FOUND"); 
+				return i; 
+			}
+			System.out.println(); 
+		}
+
+		//return -1 if it did not cause a complete cascade
+		return -1; 
+	}
+
+	public static int heuristicCascadeAlg(float[][] graph, float q)
+	{
+		System.out.println("Running Heuristic Cascade Algorithm: \n   Uses random budget nodes"); 
+
+		int size = graph[0].length; 
+		for(int i = 0; i < size; i++){
+			//use budget on random nodes
+			ArrayList<Integer> budget_nodes = new ArrayList<Integer>(); 
+			for(int j = 0; j < i; j++){
+				budget_nodes.add(randInt(0, size-1)); 
+			}
+
+			//get total number of adopting nodes after cascade halts
+			int total_adopt = i + startCascade(graph, i, q, budget_nodes); 
+			System.out.print("x: " + String.format("%3d", i) + " , total adopting after: " + total_adopt); 
+			if(total_adopt == size){
+				System.out.println(" COMPLETE CASCASDE FOUND"); 
+				return i; 
+			}
+			System.out.println(); 
+		}
+
+		return -1;
+
+	}
+
 	public static void main(String[] args)
 	{
 		String filepath;  //Path of file to open
 		float[][] graph;  //Adjacency matrix of graph
 
+		//Threshold
 		float q = 0.2f; 
 
 		//User Input
@@ -130,17 +224,16 @@ public class cascade{
 			filepath = args[0];
 		}
 
-
 		//Generate Adjacency Matrix of graph from file
 		if((graph = parseFile(filepath)) == null){
 			System.out.println("Error parsing file, aborting.");
 			return; 
 		} 		
 
-		for(int i = 0; i <= graph[0].length; i++){
-			int total_adopt = i + startCascade(graph, i, q); 
-			System.out.println("x: " + String.format("%3d", i) + " , total after: " + total_adopt); 
-		}
+		System.out.println(filepath + " has " + graph[0].length + " nodes, analysing.."); 
+
+		simpleCascadeAlg(graph, q); 
+		heuristicCascadeAlg(graph, q);
 
 	}
 }
