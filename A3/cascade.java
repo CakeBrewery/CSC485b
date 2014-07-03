@@ -1,6 +1,6 @@
 //University of Victoria
 //Samuel Navarrete
-//CSC485 A1 Q2, Diameter of a Network Graph
+//CSC485 A3, Cascade Behavious of a Network Graph
 
 import java.io.File; 
 import java.io.FileNotFoundException; 
